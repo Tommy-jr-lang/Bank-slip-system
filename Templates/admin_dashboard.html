@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="header">
+    Admin Dashboard - KIU System
+</div>
+
+<div class="container">
+
+    <h2>Registered Students</h2>
+
+    <table>
+        <tr>
+            <th>Reg No</th>
+            <th>Name</th>
+            <th>Program</th>
+            <th>School</th>
+            <th>Year</th>
+            <th>Semester</th>
+            <th>Phone</th>
+        </tr>
+
+        {% for reg, s in students.items() %}
+        <tr>
+            <td>{{ reg }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.program }}</td>
+            <td>{{ s.school }}</td>
+            <td>{{ s.year }}</td>
+            <td>{{ s.semester }}</td>
+            <td>{{ s.phone }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+
+    <a href="/" class="logout">Logout</a>
+
+</div>
+
+</body>
+</html>

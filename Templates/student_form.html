@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="header">
+    KIU Student Clearance System
+</div>
+
+<div class="container">
+    <h2>Enter Student Details</h2>
+
+    <form method="POST" action="/submit">
+        <input type="text" name="name" placeholder="Full Name" required><br>
+        <input type="text" name="reg_no" placeholder="Registration Number" required><br>
+        <input type="text" name="program" placeholder="Program" required><br>
+        <input type="text" name="school" placeholder="School/College" required><br>
+        <input type="text" name="year" placeholder="Year of Study" required><br>
+        <input type="text" name="semester" placeholder="Semester" required><br>
+        <input type="text" name="phone" placeholder="Phone Number" required><br>
+
+        <button type="submit">Proceed</button>
+    </form>
+</div>
+
+</body>
+</html>
