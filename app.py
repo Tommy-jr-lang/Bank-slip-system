@@ -1,157 +1,156 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
 from datetime import datetime
-import requests
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = os.environ.get("SECRET_KEY", "BankSlipSecret123")
 
-# ---------------- CONFIG ----------------
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Upload folder
+UPLOAD_FOLDER = "uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Create uploads folder if missing
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ---------------- STORAGE ----------------
+# Temporary memory storage
 students = {}
-transactions = {}
-
-TOTAL_FEES = 1000000
-
-# 🔥 PUT YOUR OCR API KEY HERE
-API_KEY = "K89924887088957"
-
-# ---------------- OCR VERIFICATION ----------------
-def verify_slip(image_path, student):
-    try:
-        with open(image_path, 'rb') as f:
-            response = requests.post(
-                'https://api.ocr.space/parse/image',
-                files={'file': f},
-                data={'apikey': API_KEY}
-            )
-
-        result = response.json()
-
-        if result.get("IsErroredOnProcessing"):
-            return False, None
-
-        text = result['ParsedResults'][0]['ParsedText'].lower()
-
-        name = student['name'].lower()
-        reg_no = student['reg_no'].lower()
-
-        has_bank = any(word in text for word in ["bank", "ugx", "payment", "deposit"])
-        name_match = name in text
-        reg_match = reg_no in text
-
-        # extract receipt
-        receipt = "N/A"
-        for word in text.split():
-            if word.isdigit() and len(word) >= 6:
-                receipt = word
-                break
-
-        return has_bank and name_match and reg_match, receipt
-
-    except:
-        return False, None
+submissions = []
 
 # ---------------- HOME ----------------
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template('login.html')
+    return render_template("login.html")
 
-# ---------------- STUDENT FORM ----------------
-@app.route('/student')
+
+# ---------------- STUDENT CHOICE ----------------
+@app.route("/student")
 def student():
-    return render_template('student_form.html')
+    return render_template("student_form.html")
 
-# ---------------- SUBMIT ----------------
-@app.route('/submit', methods=['POST'])
-def submit():
-    reg_no = request.form['reg_no']
 
-    students[reg_no] = {
-        "name": request.form['name'],
-        "reg_no": reg_no,
-        "program": request.form['program'],
-        "school": request.form['school'],
-        "year": request.form['year'],
-        "semester": request.form['semester'],
-        "phone": request.form['phone']
+# ---------------- REGISTER STUDENT ----------------
+@app.route("/register", methods=["POST"])
+def register():
+    fullname = request.form["fullname"]
+    regno = request.form["regno"]
+    program = request.form["program"]
+    school = request.form["school"]
+    year = request.form["year"]
+    semester = request.form["semester"]
+    phone = request.form["phone"]
+
+    students[regno] = {
+        "fullname": fullname,
+        "program": program,
+        "school": school,
+        "year": year,
+        "semester": semester,
+        "phone": phone
     }
 
-    transactions[reg_no] = []
-    session['user'] = reg_no
+    session["user"] = regno
+    return redirect(url_for("dashboard"))
 
-    return redirect('/dashboard')
 
 # ---------------- DASHBOARD ----------------
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if 'user' not in session:
-        return redirect('/')
+    if "user" not in session:
+        return redirect(url_for("home"))
 
-    reg_no = session['user']
-    student = students[reg_no]
-    user_transactions = transactions.get(reg_no, [])
+    regno = session["user"]
+    student = students.get(regno)
 
-    total_paid = sum(t['amount'] for t in user_transactions)
-    balance = TOTAL_FEES - total_paid
-    status = "Cleared" if balance <= 0 else "Not Cleared"
+    my_submissions = [x for x in submissions if x["regno"] == regno]
 
-    return render_template('dashboard.html',
-                           student=student,
-                           reg_no=reg_no,
-                           total_paid=total_paid,
-                           balance=balance,
-                           status=status,
-                           transactions=user_transactions)
+    return render_template(
+        "dashboard.html",
+        student=student,
+        regno=regno,
+        submissions=my_submissions
+    )
+
 
 # ---------------- UPLOAD PAGE ----------------
-@app.route('/upload')
-def upload_page():
-    if 'user' not in session:
-        return redirect('/')
-    return render_template('upload.html')
-
-# ---------------- UPLOAD + OCR ----------------
-@app.route('/upload', methods=['POST'])
+@app.route("/upload")
 def upload():
-    if 'user' not in session:
-        return redirect('/')
+    if "user" not in session:
+        return redirect(url_for("home"))
+    return render_template("upload.html")
 
-    file = request.files['slip']
-    reg_no = session['user']
-    student = students[reg_no]
 
-    if file:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
+# ---------------- SAVE UPLOAD ----------------
+@app.route("/submit-slip", methods=["POST"])
+def submit_slip():
+    if "user" not in session:
+        return redirect(url_for("home"))
 
-        valid, receipt = verify_slip(filepath, student)
+    if "slip" not in request.files:
+        flash("No file selected")
+        return redirect(url_for("upload"))
 
-        if valid:
-            transactions[reg_no].append({
-                "amount": 100000,
-                "receipt": receipt,
-                "date": datetime.now().strftime("%d %B %Y, %I:%M %p")
-            })
-            return render_template('upload.html', message="✅ Valid Bank Slip Verified")
+    file = request.files["slip"]
 
-        else:
-            return render_template('upload.html', message="❌ Invalid Slip (Check Name/Reg No)")
+    if file.filename == "":
+        flash("No selected file")
+        return redirect(url_for("upload"))
 
-    return render_template('upload.html', message="No file selected")
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
+
+    regno = session["user"]
+    student = students.get(regno)
+
+    submissions.append({
+        "fullname": student["fullname"],
+        "regno": regno,
+        "filename": filename,
+        "date": datetime.now().strftime("%d-%m-%Y"),
+        "time": datetime.now().strftime("%I:%M %p"),
+        "status": "Pending"
+    })
+
+    flash("Slip uploaded successfully")
+    return redirect(url_for("dashboard"))
+
+
+# ---------------- ADMIN LOGIN ----------------
+@app.route("/admin")
+def admin():
+    return render_template("admin_login.html")
+
+
+@app.route("/admin-login", methods=["POST"])
+def admin_login():
+    username = request.form["username"]
+    password = request.form["password"]
+
+    if username == "admin" and password == "1234":
+        session["admin"] = True
+        return redirect(url_for("admin_dashboard"))
+    else:
+        flash("Wrong admin credentials")
+        return redirect(url_for("admin"))
+
+
+# ---------------- ADMIN DASHBOARD ----------------
+@app.route("/admin-dashboard")
+def admin_dashboard():
+    if "admin" not in session:
+        return redirect(url_for("admin"))
+
+    return render_template("admin_dashboard.html", submissions=submissions)
+
 
 # ---------------- LOGOUT ----------------
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     session.clear()
-    return redirect('/')
+    return redirect(url_for("home"))
 
-# ---------------- RUN ----------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+# ---------------- RUN APP ----------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)

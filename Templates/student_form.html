@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Details</title>
+    <title>Student Registration</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="header">
-    KIU Student Clearance System
-</div>
-
 <div class="container">
-    <h2>Enter Student Details</h2>
+    <h2>Student Registration</h2>
 
-    <form method="POST" action="/submit">
-        <input type="text" name="name" placeholder="Full Name" required><br>
-        <input type="text" name="reg_no" placeholder="Registration Number" required><br>
-        <input type="text" name="program" placeholder="Program" required><br>
-        <input type="text" name="school" placeholder="School/College" required><br>
-        <input type="text" name="year" placeholder="Year of Study" required><br>
-        <input type="text" name="semester" placeholder="Semester" required><br>
-        <input type="text" name="phone" placeholder="Phone Number" required><br>
+    <form action="/register" method="POST">
 
-        <button type="submit">Proceed</button>
+        <input type="text" name="fullname" placeholder="Full Names" required>
+
+        <input type="text" name="regno" placeholder="Registration Number" required>
+
+        <input type="text" name="program" placeholder="Program" required>
+
+        <input type="text" name="school" placeholder="School / College" required>
+
+        <input type="text" name="year" placeholder="Year of Study" required>
+
+        <input type="text" name="semester" placeholder="Semester" required>
+
+        <input type="text" name="phone" placeholder="Phone Number" required>
+
+        <button type="submit">Continue</button>
+
     </form>
+
+    <br>
+    <a href="/">Back</a>
 </div>
 
 </body>
