@@ -1,60 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="header">Student Dashboard</div>
-
 <div class="container">
 
-    <h2>{{ student.name }}</h2>
-    <p>{{ reg_no }}</p>
+<h2>Welcome {{ student.fullname }}</h2>
 
-    <div class="card-container">
-        <div class="card">
-            <h3>Total Paid</h3>
-            <p>UGX {{ total_paid }}</p>
-        </div>
+<p><b>Reg No:</b> {{ regno }}</p>
+<p><b>Program:</b> {{ student.program }}</p>
+<p><b>School:</b> {{ student.school }}</p>
 
-        <div class="card">
-            <h3>Balance</h3>
-            <p>UGX {{ balance }}</p>
-        </div>
+<a href="/upload" class="btn">Upload Bank Slip</a>
+<a href="/logout" class="btn">Logout</a>
 
-        <div class="card">
-            <h3>Status</h3>
-            <p>{{ status }}</p>
-        </div>
-    </div>
+<h3>Previous Transactions</h3>
 
-    <div class="center-btn">
-        <a href="/upload" class="upload-btn">📤 Upload Slip</a>
-    </div>
+<table class="table">
+<tr>
+<th>Date</th>
+<th>Time</th>
+<th>Status</th>
+</tr>
 
-    <h3>Transaction History</h3>
+{% for item in submissions %}
+<tr>
+<td>{{ item.date }}</td>
+<td>{{ item.time }}</td>
+<td>{{ item.status }}</td>
+</tr>
+{% endfor %}
 
-    <div class="table-container">
-    <table>
-        <tr>
-            <th>Amount</th>
-            <th>Receipt</th>
-            <th>Date & Time</th>
-        </tr>
-
-        {% for t in transactions %}
-        <tr>
-            <td>{{ t.amount }}</td>
-            <td>{{ t.receipt }}</td>
-            <td>{{ t.date }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    </div>
-
-    <a href="/logout" class="logout">Logout</a>
+</table>
 
 </div>
 

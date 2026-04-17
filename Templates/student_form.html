@@ -1,36 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Registration</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Student Form</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="container">
-    <h2>Student Registration</h2>
+<h2>Student Registration</h2>
 
-    <form action="/register" method="POST">
+<form action="/register" method="POST">
 
-        <input type="text" name="fullname" placeholder="Full Names" required>
+<input type="text" name="fullname" placeholder="Full Names" required>
+<input type="text" name="regno" placeholder="Registration Number" required>
+<input type="text" name="program" placeholder="Program" required>
+<input type="text" name="school" placeholder="School / College" required>
+<input type="text" name="year" placeholder="Year of Study" required>
+<input type="text" name="semester" placeholder="Semester" required>
+<input type="text" name="phone" placeholder="Phone Number" required>
 
-        <input type="text" name="regno" placeholder="Registration Number" required>
+<button type="submit">Continue</button>
 
-        <input type="text" name="program" placeholder="Program" required>
+</form>
 
-        <input type="text" name="school" placeholder="School / College" required>
+<a href="/" class="btn">Back</a>
 
-        <input type="text" name="year" placeholder="Year of Study" required>
-
-        <input type="text" name="semester" placeholder="Semester" required>
-
-        <input type="text" name="phone" placeholder="Phone Number" required>
-
-        <button type="submit">Continue</button>
-
-    </form>
-
-    <br>
-    <a href="/">Back</a>
 </div>
 
 </body>

@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Slip</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<title>Upload Slip</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="header">Upload Bank Slip</div>
-
 <div class="container">
 
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="slip" accept="image/*" required><br>
+<h2>Upload Bank Slip</h2>
 
-        <p>📌 Upload a clear scanned bank slip (Max 2MB)</p>
+<p class="small">Upload clear slip image for OCR verification</p>
 
-        <button type="submit">Scan & Verify</button>
-    </form>
+<form action="/submit-slip" method="POST" enctype="multipart/form-data">
 
-    {% if message %}
-        <p class="message">{{ message }}</p>
-    {% endif %}
+<input type="file" name="slip" accept="image/*,.pdf" capture="environment" required>
+
+<button type="submit">Scan & Upload</button>
+
+</form>
+
+<a href="/dashboard" class="btn">Back</a>
 
 </div>
 

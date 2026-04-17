@@ -1,168 +1,76 @@
-/* ---------------- GENERAL ---------------- */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #006400, #00a86b);
-    color: white;
+body{
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(to right,#0f9b0f,#38ef7d);
 }
 
-/* ---------------- HEADER ---------------- */
-.header {
-    background: black;
-    padding: 15px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
+.container{
+    width:90%;
+    max-width:500px;
+    background:white;
+    margin:40px auto;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,0.2);
 }
 
-/* ---------------- CONTAINER ---------------- */
-.container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 40px;
+h1,h2,h3{
+    text-align:center;
+    color:#0f9b0f;
 }
 
-/* ---------------- BUTTONS ---------------- */
-button,
-.btn,
-a.btn {
-    display: inline-block;
-    padding: 12px 25px;
-    margin: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    color: white;
-    transition: 0.3s;
+input,select{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
 }
 
-/* student button */
-.student-btn {
-    background: #007bff;
+button,.btn{
+    display:block;
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#0f9b0f;
+    color:white;
+    text-decoration:none;
+    border:none;
+    border-radius:8px;
+    font-size:17px;
+    cursor:pointer;
+    text-align:center;
 }
 
-.student-btn:hover {
-    background: #0056b3;
+button:hover,.btn:hover{
+    background:#087f08;
 }
 
-/* admin button */
-.admin-btn {
-    background: orange;
+a{
+    text-decoration:none;
 }
 
-.admin-btn:hover {
-    background: darkorange;
+.table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
 }
 
-/* upload button */
-.upload-btn {
-    background: red;
-    padding: 15px 35px;
-    font-size: 18px;
+.table th,.table td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:center;
 }
 
-.upload-btn:hover {
-    background: darkred;
+.table th{
+    background:#0f9b0f;
+    color:white;
 }
 
-/* logout button */
-.logout {
-    background: crimson;
-}
-
-.logout:hover {
-    background: darkred;
-}
-
-/* ---------------- FORM ---------------- */
-form {
-    background: white;
-    color: black;
-    padding: 30px;
-    border-radius: 12px;
-    width: 350px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-/* inputs */
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-}
-
-/* submit button inside form */
-form button {
-    width: 100%;
-    background: #006400;
-}
-
-form button:hover {
-    background: #004d00;
-}
-
-/* ---------------- CARDS ---------------- */
-.card-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin: 20px;
-}
-
-.card {
-    background: white;
-    color: black;
-    padding: 20px;
-    width: 200px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* ---------------- TABLE ---------------- */
-.table-container {
-    margin-top: 20px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-table {
-    width: 80%;
-    border-collapse: collapse;
-    background: white;
-    color: black;
-}
-
-th {
-    background: #006400;
-    color: white;
-}
-
-th, td {
-    padding: 12px;
-    border: 1px solid black;
-    text-align: center;
-}
-
-/* ---------------- CENTER BUTTON ---------------- */
-.center-btn {
-    margin: 30px;
-    text-align: center;
-}
-
-/* ---------------- MESSAGE ---------------- */
-.message {
-    margin-top: 15px;
-    font-weight: bold;
-    color: yellow;
+.small{
+    font-size:14px;
+    color:#666;
+    text-align:center;
 }
