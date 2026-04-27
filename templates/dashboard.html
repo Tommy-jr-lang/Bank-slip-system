@@ -1,29 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Dashboard</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+<h2>Dashboard</h2>
 
-<div class="container">
-
-<h2>Welcome {{ student.fullname }}</h2>
-
-<p><b>Reg No:</b> {{ regno }}</p>
-<p><b>Program:</b> {{ student.program }}</p>
-<p><b>School:</b> {{ student.school }}</p>
-
-<a href="/upload" class="btn">Upload Bank Slip</a>
-<a href="/logout" class="btn">Logout</a>
-
-<h3>Previous Transactions</h3>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="background:#d4edda;padding:10px;">
+      {% for m in messages %}
+        <p>{{ m }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
 <table class="table">
 <tr>
 <th>Date</th>
 <th>Time</th>
 <th>Status</th>
+<th>Amount</th>
 </tr>
 
 {% for item in submissions %}
@@ -31,12 +23,7 @@
 <td>{{ item.date }}</td>
 <td>{{ item.time }}</td>
 <td>{{ item.status }}</td>
+<td>{{ item.amount }}</td>
 </tr>
 {% endfor %}
-
 </table>
-
-</div>
-
-</body>
-</html>

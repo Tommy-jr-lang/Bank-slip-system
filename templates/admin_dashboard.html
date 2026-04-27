@@ -1,23 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Admin Dashboard</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<div class="container">
-
-<h2>Admin Dashboard</h2>
-
 <table class="table">
 <tr>
 <th>Name</th>
 <th>Reg No</th>
 <th>Slip</th>
-<th>Date</th>
-<th>Time</th>
 <th>Status</th>
+<th>Action</th>
 </tr>
 
 {% for item in submissions %}
@@ -25,17 +12,11 @@
 <td>{{ item.fullname }}</td>
 <td>{{ item.regno }}</td>
 <td>{{ item.filename }}</td>
-<td>{{ item.date }}</td>
-<td>{{ item.time }}</td>
 <td>{{ item.status }}</td>
+<td>
+<a href="/approve/{{ loop.index0 }}">Approve</a> |
+<a href="/reject/{{ loop.index0 }}">Reject</a>
+</td>
 </tr>
 {% endfor %}
-
 </table>
-
-<a href="/logout" class="btn">Logout</a>
-
-</div>
-
-</body>
-</html>
