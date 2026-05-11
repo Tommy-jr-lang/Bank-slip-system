@@ -2,27 +2,86 @@
 <html>
 <head>
 <title>Upload Slip</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+
 </head>
+
 <body>
 
 <div class="container">
 
 <h2>Upload Bank Slip</h2>
 
-<p class="small">Upload clear slip image for OCR verification</p>
+<p class="small">
+Upload clear slip image for OCR verification
+</p>
 
-<form action="/submit-slip" method="POST" enctype="multipart/form-data">
+<!-- NOTIFICATIONS -->
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div style="
+            background:#e8f5e9;
+            padding:10px;
+            border-left:5px solid green;
+            margin-bottom:15px;
+            border-radius:5px;
+        ">
+            {% for msg in messages %}
+                <p>{{ msg }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 
-<input type="file" name="slip" accept="image/*,.pdf" capture="environment" required>
+<!-- FORM START -->
+<form action="/submit-slip"
+      method="POST"
+      enctype="multipart/form-data"
+      onsubmit="showLoading()">
 
-<button type="submit">Scan & Upload</button>
+    <input type="file"
+           name="slip"
+           accept="image/*,.pdf"
+           capture="environment"
+           required>
+
+    <br><br>
+
+    <button type="submit" class="btn">
+        Scan & Upload
+    </button>
 
 </form>
+<!-- FORM END -->
+
+<!-- LOADING MESSAGE -->
+<div id="loading"
+     style="
+     display:none;
+     margin-top:15px;
+     color:green;
+     font-weight:bold;
+     ">
+     ⏳ Processing... verifying slip, please wait...
+</div>
+
+<br>
 
 <a href="/dashboard" class="btn">Back</a>
 
 </div>
+
+<script>
+
+function showLoading() {
+
+    document.getElementById("loading").style.display = "block";
+
+}
+
+</script>
 
 </body>
 </html>

@@ -17,6 +17,17 @@
 <a href="/upload" class="btn">Upload Bank Slip</a>
 <a href="/logout" class="btn">Logout</a>
 
+<!-- 🔔 NOTIFICATION SECTION -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="margin:15px 0; padding:12px; background:#e8f5e9; border-left:6px solid #2e7d32; border-radius:5px;">
+      {% for msg in messages %}
+        <p style="margin:5px 0; font-weight:bold;">{{ msg }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
 <h3>Previous Transactions</h3>
 
 <table class="table">
@@ -30,7 +41,51 @@
 <tr>
 <td>{{ item.date }}</td>
 <td>{{ item.time }}</td>
-<td>{{ item.status }}</td>
+
+<td>
+
+    {% if item.status == "Verified" %}
+        <span style="color:green; font-weight:bold;">✔ Verified</span>
+
+    {% elif item.status == "Not Clear" %}
+        <span style="color:orange; font-weight:bold;">⚠ Not Clear</span>
+        <br>
+        <a href="/upload" style="color:blue; font-size:12px;">Re-upload slip</a>
+
+    {% elif item.status == "Mismatch" %}
+        <span style="color:red; font-weight:bold;">✖ Mismatch</span>
+        <br>
+        <a href="/upload" style="color:blue; font-size:12px;">Re-upload slip</a>
+
+    {% elif item.status == "Duplicate" %}
+        <span style="color:purple; font-weight:bold;">⚠ Duplicate</span>
+
+    {% elif item.status == "Approved" %}
+        <span style="color:blue; font-weight:bold;">✔ Approved</span>
+
+    {% elif item.status == "Rejected" %}
+        <span style="color:red; font-weight:bold;">✖ Rejected</span>
+        <br>
+        <a href="/upload" style="color:blue; font-size:12px;">Upload new slip</a>
+
+    {% else %}
+        {{ item.status }}
+    {% endif %}
+
+    <!-- 🔍 OCR TEXT PREVIEW (SAFE CHECK) -->
+    {% if item.ocr_text is defined and item.ocr_text %}
+        <details>
+            <summary style="cursor:pointer; font-size:12px; margin-top:5px;">
+                View extracted text
+            </summary>
+            <p style="font-size:11px; background:#f1f1f1; padding:5px;">
+                {{ item.ocr_text }}
+            </p>
+        </details>
+    {% endif %}
+
+</td>
+
 </tr>
 {% endfor %}
 
