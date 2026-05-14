@@ -15,7 +15,7 @@ href="{{ url_for('static', filename='style.css') }}">
 <h2>Upload Bank Slip</h2>
 
 <p class="small">
-Upload clear slip image for OCR verification
+Upload a clear bank slip image for payment verification
 </p>
 
 <!-- NOTIFICATIONS -->
@@ -29,7 +29,9 @@ Upload clear slip image for OCR verification
             border-radius:5px;
         ">
             {% for msg in messages %}
-                <p>{{ msg }}</p>
+                <p style="font-weight:bold;">
+                    {{ msg }}
+                </p>
             {% endfor %}
         </div>
     {% endif %}
@@ -40,6 +42,12 @@ Upload clear slip image for OCR verification
       method="POST"
       enctype="multipart/form-data"
       onsubmit="showLoading()">
+
+    <label style="font-weight:bold;">
+        Select Bank Slip
+    </label>
+
+    <br><br>
 
     <input type="file"
            name="slip"
@@ -64,12 +72,38 @@ Upload clear slip image for OCR verification
      color:green;
      font-weight:bold;
      ">
-     ⏳ Processing... verifying slip, please wait...
+
+     ⏳ Processing... verifying uploaded slip...
+
+</div>
+
+<!-- INSTRUCTIONS -->
+<div style="
+margin-top:20px;
+padding:12px;
+background:#f5f5f5;
+border-radius:6px;
+text-align:left;
+font-size:14px;
+">
+
+<b>Instructions:</b>
+
+<ul style="margin-top:10px;">
+
+<li>Upload only official bank slips</li>
+
+<li>Ensure image is clear and readable</li>
+
+<li>Blurry or invalid slips are rejected automatically</li>
+
+</ul>
+
 </div>
 
 <br>
 
-<a href="/dashboard" class="btn">Back</a>
+<a href="/dashboard" class="btn">Back to Dashboard</a>
 
 </div>
 

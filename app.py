@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for
+from flask import session, flash, send_from_directory
+
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -6,31 +8,38 @@ import requests
 import re
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "BankSlipSecret123")
+
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "BankSlipSecret123"
+)
 
 # ---------------- CONFIG ----------------
 UPLOAD_FOLDER = "uploads"
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # OCR API KEY
 API_KEY = "K88887681888957"
 
-# Create uploads folder
+# CREATE UPLOADS FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Temporary memory storage
+# MEMORY STORAGE
 students = {}
 submissions = []
 
 # ---------------- HOME ----------------
 @app.route("/")
 def home():
+
     return render_template("login.html")
 
 
 # ---------------- STUDENT PAGE ----------------
 @app.route("/student")
 def student():
+
     return render_template("student_form.html")
 
 
@@ -47,12 +56,14 @@ def register():
     phone = request.form["phone"]
 
     students[regno] = {
+
         "fullname": fullname,
         "program": program,
         "school": school,
         "year": year,
         "semester": semester,
         "phone": phone
+
     }
 
     session["user"] = regno
@@ -65,20 +76,27 @@ def register():
 def dashboard():
 
     if "user" not in session:
+
         return redirect(url_for("home"))
 
     regno = session["user"]
+
     student = students.get(regno)
 
     my_submissions = [
-        x for x in submissions if x["regno"] == regno
+
+        x for x in submissions
+        if x["regno"] == regno
+
     ]
 
     return render_template(
+
         "dashboard.html",
         student=student,
         regno=regno,
         submissions=my_submissions
+
     )
 
 
@@ -87,35 +105,42 @@ def dashboard():
 def upload():
 
     if "user" not in session:
+
         return redirect(url_for("home"))
 
     return render_template("upload.html")
 
 
-# ---------------- SAVE UPLOAD ----------------
+# ---------------- SUBMIT SLIP ----------------
 @app.route("/submit-slip", methods=["POST"])
 def submit_slip():
 
     if "user" not in session:
+
         return redirect(url_for("home"))
 
     file = request.files.get("slip")
 
-    # -------- FILE CHECK --------
+    # -------- CHECK FILE --------
     if not file or file.filename == "":
+
         flash("❌ No file selected")
+
         return redirect(url_for("upload"))
 
     filename = secure_filename(file.filename)
 
     filepath = os.path.join(
+
         app.config["UPLOAD_FOLDER"],
         filename
+
     )
 
     file.save(filepath)
 
     regno = session["user"]
+
     student = students.get(regno)
 
     # -------- DUPLICATE CHECK --------
@@ -123,7 +148,9 @@ def submit_slip():
 
         if item["filename"] == filename:
 
-            flash("⚠️ This bank slip was already uploaded.")
+            flash(
+                "⚠️ This bank slip was already uploaded."
+            )
 
             return redirect(url_for("dashboard"))
 
@@ -135,12 +162,18 @@ def submit_slip():
         with open(filepath, "rb") as f:
 
             response = requests.post(
+
                 "https://api.ocr.space/parse/image",
-                files={"file": f},
+
+                files={
+                    "file": f
+                },
+
                 data={
                     "apikey": API_KEY,
                     "language": "eng"
                 }
+
             )
 
         result = response.json()
@@ -148,36 +181,48 @@ def submit_slip():
         print(result)
 
         if (
+
             "ParsedResults" in result
             and result["ParsedResults"]
+
         ):
 
-            extracted_text = result["ParsedResults"][0].get(
+            extracted_text = result[
+                "ParsedResults"
+            ][0].get(
+
                 "ParsedText",
                 ""
+
             ).lower()
 
     except Exception as e:
 
         print(e)
 
-        flash("❌ Verification service failed")
+        flash(
+            "❌ OCR verification service failed."
+        )
 
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("upload"))
 
-    # -------- VERIFICATION --------
-    status = "Pending"
-
-    fullname = student["fullname"].lower()
-
-    # Detect amount-like patterns
+    # -------- DETECT AMOUNT --------
     amounts = re.findall(
-        r"\d+[.,]\d{2}",
+
+        r"\d+[.,]?\d*",
         extracted_text
+
     )
 
-    # Bank keywords
+    detected_amount = "Not Detected"
+
+    if amounts:
+
+        detected_amount = amounts[0]
+
+    # -------- BANK KEYWORDS --------
     bank_keywords = [
+
         "bank",
         "deposit",
         "receipt",
@@ -189,76 +234,71 @@ def submit_slip():
         "account",
         "withdraw",
         "branch"
+
     ]
 
     found_bank_word = any(
+
         word in extracted_text
         for word in bank_keywords
+
     )
 
-    # -------- CONDITIONS --------
+    # -------- VALIDATION --------
 
-    # NO TEXT FOUND
+    # NO TEXT
     if extracted_text.strip() == "":
-
-        status = "Not Clear"
 
         flash(
             "❌ No readable text detected. "
-            "Please upload a clear bank slip image."
+            "Upload a clearer bank slip."
         )
 
-    # RANDOM IMAGE / NOT BANK SLIP
+        return redirect(url_for("upload"))
+
+    # INVALID IMAGE
     elif not found_bank_word:
 
-        status = "Invalid"
-
         flash(
-            "⚠️ Uploaded image is not recognized "
-            "as a valid bank slip."
+            "❌ Uploaded image is NOT recognized "
+            "as a bank slip."
         )
 
-    # VERIFIED
-    elif (
-        fullname in extracted_text
-        and regno.lower() in extracted_text
-    ):
-
-        status = "Verified"
-
-        if amounts:
-
-            flash(
-                f"✅ Bank slip VERIFIED successfully. "
-                f"Amount detected: {amounts[0]}"
-            )
-
-        else:
-
-            flash(
-                "✅ Bank slip VERIFIED successfully."
-            )
-
-    # DETAILS MISMATCH
-    else:
-
-        status = "Mismatch"
-
-        flash(
-            "❌ Slip details do not match "
-            "student records."
-        )
+        return redirect(url_for("upload"))
 
     # -------- SAVE SUBMISSION --------
     submissions.append({
+
+        "id": len(submissions),
+
         "fullname": student["fullname"],
+
         "regno": regno,
+
         "filename": filename,
-        "date": datetime.now().strftime("%d-%m-%Y"),
-        "time": datetime.now().strftime("%H:%M"),
-        "status": status,
-        "ocr_text": extracted_text[:300]
+
+        "date": datetime.now().strftime(
+            "%d-%m-%Y"
+        ),
+
+        "time": datetime.now().strftime(
+            "%H:%M"
+        ),
+
+        "status": "Payment Pending",
+
+        "amount": detected_amount,
+
+        "balance": "Pending",
+
+        "ocr_text": extracted_text[:700]
+
     })
+
+    flash(
+        "✅ Bank slip uploaded successfully. "
+        "Awaiting admin verification."
+    )
 
     return redirect(url_for("dashboard"))
 
@@ -266,7 +306,10 @@ def submit_slip():
 # ---------------- ADMIN PAGE ----------------
 @app.route("/admin")
 def admin():
-    return render_template("admin_login.html")
+
+    return render_template(
+        "admin_login.html"
+    )
 
 
 # ---------------- ADMIN LOGIN ----------------
@@ -274,17 +317,27 @@ def admin():
 def admin_login():
 
     username = request.form["username"]
+
     password = request.form["password"]
 
-    if username == "admin" and password == "1234":
+    if (
+
+        username == "admin"
+        and password == "1234"
+
+    ):
 
         session["admin"] = True
 
-        return redirect(url_for("admin_dashboard"))
+        return redirect(
+            url_for("admin_dashboard")
+        )
 
     else:
 
-        flash("❌ Wrong admin credentials")
+        flash(
+            "❌ Wrong admin credentials"
+        )
 
         return redirect(url_for("admin"))
 
@@ -294,11 +347,95 @@ def admin_login():
 def admin_dashboard():
 
     if "admin" not in session:
+
         return redirect(url_for("admin"))
 
     return render_template(
+
         "admin_dashboard.html",
+
         submissions=submissions
+
+    )
+
+
+# ---------------- CONFIRM PAYMENT ----------------
+@app.route(
+    "/confirm-payment/<int:submission_id>",
+    methods=["POST"]
+)
+def confirm_payment(submission_id):
+
+    if "admin" not in session:
+
+        return redirect(url_for("admin"))
+
+    balance = request.form.get("balance", "").strip()
+
+    for item in submissions:
+
+        if item["id"] == submission_id:
+
+            item["status"] = "Payment Done"
+
+            if balance == "" or balance == "0":
+
+                item["balance"] = "CLEARED"
+
+            else:
+
+                item["balance"] = balance
+
+            break
+
+    flash(
+        "✅ Payment confirmed successfully"
+    )
+
+    return redirect(
+        url_for("admin_dashboard")
+    )
+
+
+# ---------------- REJECT PAYMENT ----------------
+@app.route(
+    "/reject-payment/<int:submission_id>",
+    methods=["POST"]
+)
+def reject_payment(submission_id):
+
+    if "admin" not in session:
+
+        return redirect(url_for("admin"))
+
+    for item in submissions:
+
+        if item["id"] == submission_id:
+
+            item["status"] = "Rejected"
+
+            item["balance"] = "NOT CLEARED"
+
+            break
+
+    flash(
+        "❌ Payment rejected"
+    )
+
+    return redirect(
+        url_for("admin_dashboard")
+    )
+
+
+# ---------------- VIEW UPLOADED FILE ----------------
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+
+    return send_from_directory(
+
+        app.config["UPLOAD_FOLDER"],
+        filename
+
     )
 
 
@@ -315,7 +452,11 @@ def logout():
 if __name__ == "__main__":
 
     app.run(
+
         host="0.0.0.0",
+
         port=5000,
+
         debug=True
+
     )

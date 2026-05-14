@@ -31,57 +31,102 @@
 <h3>Previous Transactions</h3>
 
 <table class="table">
+
 <tr>
 <th>Date</th>
 <th>Time</th>
 <th>Status</th>
+<th>Balance</th>
 </tr>
 
 {% for item in submissions %}
 <tr>
+
 <td>{{ item.date }}</td>
+
 <td>{{ item.time }}</td>
 
 <td>
 
-    {% if item.status == "Verified" %}
-        <span style="color:green; font-weight:bold;">✔ Verified</span>
-
-    {% elif item.status == "Not Clear" %}
-        <span style="color:orange; font-weight:bold;">⚠ Not Clear</span>
+    {% if item.status == "Payment Pending" %}
+        <span style="color:orange; font-weight:bold;">
+            ⏳ Payment Pending
+        </span>
         <br>
-        <a href="/upload" style="color:blue; font-size:12px;">Re-upload slip</a>
+        <small>
+            Waiting for admin verification
+        </small>
 
-    {% elif item.status == "Mismatch" %}
-        <span style="color:red; font-weight:bold;">✖ Mismatch</span>
-        <br>
-        <a href="/upload" style="color:blue; font-size:12px;">Re-upload slip</a>
-
-    {% elif item.status == "Duplicate" %}
-        <span style="color:purple; font-weight:bold;">⚠ Duplicate</span>
-
-    {% elif item.status == "Approved" %}
-        <span style="color:blue; font-weight:bold;">✔ Approved</span>
+    {% elif item.status == "Payment Done" %}
+        <span style="color:green; font-weight:bold;">
+            ✔ Payment Done
+        </span>
 
     {% elif item.status == "Rejected" %}
-        <span style="color:red; font-weight:bold;">✖ Rejected</span>
+        <span style="color:red; font-weight:bold;">
+            ✖ Payment Rejected
+        </span>
         <br>
-        <a href="/upload" style="color:blue; font-size:12px;">Upload new slip</a>
+        <a href="/upload"
+        style="color:blue; font-size:12px;">
+            Upload new slip
+        </a>
+
+    {% elif item.status == "Invalid Slip" %}
+        <span style="color:red; font-weight:bold;">
+            ⚠ Invalid Bank Slip
+        </span>
+        <br>
+        <a href="/upload"
+        style="color:blue; font-size:12px;">
+            Re-upload correct bank slip
+        </a>
 
     {% else %}
         {{ item.status }}
     {% endif %}
 
-    <!-- 🔍 OCR TEXT PREVIEW (SAFE CHECK) -->
+    <!-- OCR DETAILS -->
     {% if item.ocr_text is defined and item.ocr_text %}
-        <details>
-            <summary style="cursor:pointer; font-size:12px; margin-top:5px;">
-                View extracted text
-            </summary>
-            <p style="font-size:11px; background:#f1f1f1; padding:5px;">
-                {{ item.ocr_text }}
-            </p>
-        </details>
+    <details style="margin-top:8px;">
+        <summary style="cursor:pointer; font-size:12px;">
+            View scanned slip details
+        </summary>
+
+        <div style="
+            background:#f5f5f5;
+            padding:8px;
+            margin-top:5px;
+            border-radius:5px;
+            font-size:12px;
+            text-align:left;
+        ">
+            {{ item.ocr_text }}
+        </div>
+    </details>
+    {% endif %}
+
+</td>
+
+<!-- BALANCE COLUMN -->
+<td>
+
+    {% if item.balance is defined %}
+
+        {% if item.balance == "CLEARED" %}
+            <span style="color:green; font-weight:bold;">
+                CLEARED
+            </span>
+
+        {% else %}
+            <span style="color:red; font-weight:bold;">
+                {{ item.balance }}
+            </span>
+
+        {% endif %}
+
+    {% else %}
+        Pending
     {% endif %}
 
 </td>
